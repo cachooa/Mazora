@@ -816,7 +816,7 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    Standalone: AMPLIFY_SHADER_EDITOR
+    Standalone: AMPLIFY_SHADER_EDITOR;MAGICACLOTH2
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

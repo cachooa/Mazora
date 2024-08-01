@@ -65,7 +65,7 @@ namespace AmplifyShaderPack.Lights
 
 #if UNITY_2019_3_OR_NEWER
             // For Unity 2019.3 or newer, set individual lights to use color temperature if the global setting is true.
-            var lights = UnityEngine.Object.FindObjectsOfType<Light>();
+            var lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
             for (int i = 0; i < lights.Length; i++)
                 lights[i].useColorTemperature = GraphicsSettings.lightsUseColorTemperature;
 #endif
