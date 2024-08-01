@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 50bcf1937cf80ba4db3356b59df2c924
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/URP/Scene/Scene Light Skybox.prefab
+  uploadId: 681651

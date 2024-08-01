@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 05bfdbb9e8c2a1548b752272b483437c
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Scripts/Global Light Settings/Change
+    Log.md
+  uploadId: 681651

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0e687231797848eab8f5d7373255a85d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/HDRP/Scene/Showroom Baked.prefab
+  uploadId: 681651

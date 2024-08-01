@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 39228299bbce6494a84d6e580af7483d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/BIRP/Scene/Light R2.prefab
+  uploadId: 681651

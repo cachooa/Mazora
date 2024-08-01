@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 61a9b2a3760a49219c1a2f40970981aa
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/HDRP/Scene/Showroom.prefab
+  uploadId: 681651

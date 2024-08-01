@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 18094ff0548945e295a1f93d35d4c2ef
+timeCreated: 1497353712
+licenseType: Store
+NativeFormatImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/URP/Samples/Simple GPU Instancing.prefab
+  uploadId: 681651

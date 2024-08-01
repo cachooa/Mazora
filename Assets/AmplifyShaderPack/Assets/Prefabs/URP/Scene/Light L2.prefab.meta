@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e54bcbccd7e84ca799a63cee1a5d2d8c
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/URP/Scene/Light L2.prefab
+  uploadId: 681651

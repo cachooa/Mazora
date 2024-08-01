@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0cf53c45c42d4b9eba62830d3b5d0f76
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/HDRP/Scene/Light SoftBox.prefab
+  uploadId: 681651

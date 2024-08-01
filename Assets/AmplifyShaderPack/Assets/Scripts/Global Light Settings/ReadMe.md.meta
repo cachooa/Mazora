@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1d807c679adfe8742b50d53e7603443c
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Scripts/Global Light Settings/ReadMe.md
+  uploadId: 681651

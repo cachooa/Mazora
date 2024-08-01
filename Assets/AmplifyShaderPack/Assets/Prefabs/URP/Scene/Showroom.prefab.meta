@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9a7ec64695bc4dadb659419fbbbe4ee1
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 202484
+  packageName: Amplify Shader Pack
+  packageVersion: 2.3.0
+  assetPath: Assets/AmplifyShaderPack/Assets/Prefabs/URP/Scene/Showroom.prefab
+  uploadId: 681651
