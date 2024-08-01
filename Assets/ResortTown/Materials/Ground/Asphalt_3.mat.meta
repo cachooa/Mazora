@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3894b9ea4e8b7364f995b8c039c6ede4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Materials/Ground/Asphalt_3.mat
+  uploadId: 669247

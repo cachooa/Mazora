@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8fb2b414be6a2e04fad3127bef72000f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Materials/Props/Signboards.mat
+  uploadId: 669247

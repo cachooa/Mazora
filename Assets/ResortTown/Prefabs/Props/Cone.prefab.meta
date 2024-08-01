@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 1e4b573f87133bc45a595c3f3c03820b
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Props/Cone.prefab
+  uploadId: 669247

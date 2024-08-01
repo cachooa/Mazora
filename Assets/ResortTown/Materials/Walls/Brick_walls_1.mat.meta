@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 53d7ec61569b6c84d85bd57a56d4dff3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Materials/Walls/Brick_walls_1.mat
+  uploadId: 669247

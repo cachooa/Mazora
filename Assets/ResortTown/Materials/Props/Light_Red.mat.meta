@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: a84b3106ba2ace94cabb54c5a498354a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Materials/Props/Light_Red.mat
+  uploadId: 669247

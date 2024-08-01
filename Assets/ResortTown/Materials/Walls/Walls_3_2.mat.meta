@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d26bf2fb86b270b4fbb00c8d28f1fd7a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Materials/Walls/Walls_3_2.mat
+  uploadId: 669247

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6a53fa64565ba19429278e610417a866
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Materials/Buildings_parts/Tile_1.mat
+  uploadId: 669247

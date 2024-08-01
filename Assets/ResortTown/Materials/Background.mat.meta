@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5c163dd142caee74887ee9e8bcf87663
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Materials/Background.mat
+  uploadId: 669247

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d695805dce4ad144c969607dc7164ac0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Timeline/Timeline.playable
+  uploadId: 669247

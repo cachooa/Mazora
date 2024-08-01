@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 25fd8756cbdc40b4f88740acd47bf4e2
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Buildings/Building_8.prefab
+  uploadId: 669247

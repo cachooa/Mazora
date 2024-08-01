@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 31b597d7d2313554f83d80a0e340fdfb
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Ground/Road_half_2.prefab
+  uploadId: 669247

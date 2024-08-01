@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 81953a1ab7b3b60469d3756266066879
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Ground/Sidewalk_corner_6.prefab
+  uploadId: 669247

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 883f04c1027d1994c9cb7d6c9bbf86de
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Props/Hydrant.prefab
+  uploadId: 669247

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 6874b710dd8d4bf448fa0d987b5c23fc
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Props/Wall_clumb.prefab
+  uploadId: 669247

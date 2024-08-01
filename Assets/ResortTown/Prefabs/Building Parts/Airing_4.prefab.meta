@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 40c2f88fbaccc9a46a508dc796bef936
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Building Parts/Airing_4.prefab
+  uploadId: 669247

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ae1fb8dd82da4bd4d841c30d0a2f1893
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 100100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 91427
+  packageName: Modular Resort Town
+  packageVersion: 1.5
+  assetPath: Assets/ResortTown/Prefabs/Building Parts/Awning_1_1.prefab
+  uploadId: 669247
