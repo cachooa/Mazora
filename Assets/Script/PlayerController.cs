@@ -12,18 +12,26 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private bool isGrounded;
     private bool isDashing;
+    private bool isPerformingAction;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        // animator = GetComponent<Animator>(); // 이 부분을 제거
     }
 
     void Update()
     {
-        Move();
-        Rotate();
-        Jump();
+        if (!isPerformingAction)
+        {
+            Move();
+            Rotate();
+            Jump();
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            PerformAction();
+        }
     }
 
     void Move()
@@ -100,6 +108,18 @@ public class PlayerController : MonoBehaviour
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             animator.SetTrigger("Jump");
         }
+    }
+
+    void PerformAction()
+    {
+        isPerformingAction = true;
+        animator.SetTrigger("Action");
+    }
+
+    // 애니메이션 이벤트를 통해 액션 종료 시 호출
+    public void OnActionEnd()
+    {
+        isPerformingAction = false;
     }
 
     void OnCollisionEnter(Collision collision)

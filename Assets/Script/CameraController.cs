@@ -14,9 +14,19 @@ public class CameraController : MonoBehaviour
     private float currentY = 0.0f;
     private bool isFocused = true; // 포커스 여부 확인
 
+    // Y축 회전 각도의 최소/최대 값 (각도 제한)
+    public float minYAngle = -80f;
+    public float maxYAngle = 80f;
+
     void OnApplicationFocus(bool hasFocus)
     {
         isFocused = hasFocus;
+    }
+
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked; // 마우스 커서 숨김 및 고정
+        Cursor.visible = false; // 마우스 커서 숨김
     }
 
     void Update()
@@ -26,6 +36,9 @@ public class CameraController : MonoBehaviour
             // 마우스 입력 처리
             currentX += Input.GetAxis("Mouse X") * 360f / rotationSpeed * Time.deltaTime;
             currentY -= Input.GetAxis("Mouse Y") * 360f / rotationSpeed * Time.deltaTime;
+
+            // Y축 회전 각도를 제한
+            currentY = Mathf.Clamp(currentY, minYAngle, maxYAngle);
 
             // 줌 인/줌 아웃 처리
             float scroll = Input.GetAxis("Mouse ScrollWheel");
