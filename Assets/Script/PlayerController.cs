@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviour
             Jump();
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.F))
         {
             PerformAction();
         }
