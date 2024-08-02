@@ -3,11 +3,21 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
-    public float dashMultiplier = 2f; // 대시 속도의 배수
-    public float rotationSpeed = 1f; // 회전 속도 (1이면 1초에 목표 각도에 도달)
+    public float dashMultiplier = 2f;
+    public float rotationSpeed = 1f;
     public float jumpForce = 7f;
+    public float health = 100f; // 캐릭터의 체력
     public Transform cameraTransform;
-    public Animator animator; // Animator를 Inspector에서 지정할 수 있도록 변경
+    public Animator animator;
+
+    [System.Serializable]
+    public class ActionSlot
+    {
+        public ActionPreset actionPreset; // 액션 프리셋
+        public float attackDamage; // 해당 프리셋의 공격력
+    }
+
+    public ActionSlot[] actionSlots; // 액션 슬롯 배열
 
     private Rigidbody rb;
     private bool isGrounded;
@@ -30,8 +40,9 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.F))
         {
-            PerformAction();
+            PerformAction(0); // 첫 번째 액션 슬롯 실행
         }
+        // 다른 키와 액션 슬롯을 연결하려면 추가적인 키 입력 체크를 여기에 추가하세요.
     }
 
     void Move()
@@ -47,7 +58,6 @@ public class PlayerController : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
-        // Shift 키를 누르면 대시
         float speed = moveSpeed;
         if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
         {
@@ -60,12 +70,9 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector3 movement = (forward * moveVertical + right * moveHorizontal).normalized * speed * Time.deltaTime;
-
-        // Rigidbody를 이용한 이동
         Vector3 newPosition = rb.position + movement;
         rb.MovePosition(newPosition);
 
-        // 애니메이터 매개변수 설정
         animator.SetFloat("Speed", movement.magnitude);
         animator.SetBool("IsDashing", isDashing);
     }
@@ -90,12 +97,10 @@ public class PlayerController : MonoBehaviour
             Quaternion targetRotation = Quaternion.LookRotation(direction);
             if (rotationSpeed == 0f)
             {
-                // 즉시 회전
                 transform.rotation = targetRotation;
             }
             else
             {
-                // 시간 기반 회전
                 transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f / rotationSpeed * Time.deltaTime);
             }
         }
@@ -110,13 +115,26 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void PerformAction()
+    void PerformAction(int slotIndex)
     {
+        if (slotIndex < 0 || slotIndex >= actionSlots.Length)
+        {
+            Debug.LogWarning("Invalid action slot index!");
+            return;
+        }
+
         isPerformingAction = true;
+        ActionSlot slot = actionSlots[slotIndex];
+        
+        if (slot.actionPreset != null)
+        {
+            // 여기서 공격력을 적용하는 로직을 추가합니다.
+            ApplyDamage(slot.attackDamage);
+        }
+
         animator.SetTrigger("Action");
     }
 
-    // 애니메이션 이벤트를 통해 액션 종료 시 호출
     public void OnActionEnd()
     {
         isPerformingAction = false;
@@ -138,5 +156,26 @@ public class PlayerController : MonoBehaviour
             isGrounded = false;
             animator.SetBool("IsGrounded", false);
         }
+    }
+
+    public void TakeDamage(float damage)
+    {
+        health -= damage;
+        if (health <= 0f)
+        {
+            Die();
+        }
+    }
+
+    void ApplyDamage(float damage)
+    {
+        // 여기에 상대방 캐릭터나 대상에게 데미지를 적용하는 로직을 추가합니다.
+        // 예: 타격된 대상에게 데미지를 적용하는 메서드 호출
+        Debug.Log($"Applying {damage} damage.");
+    }
+
+    void Die()
+    {
+        // 캐릭터 사망 처리 로직
     }
 }

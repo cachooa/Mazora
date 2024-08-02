@@ -49,7 +49,11 @@ public class AnimationEventHandler : MonoBehaviour
             else
             {
                 // Rigidbody가 없는 경우 다른 값을 전달
-                collider.SendMessage("OnReceiveAction", SendMessageOptions.DontRequireReceiver);
+                ObjectTarget target = collider.GetComponent<ObjectTarget>();
+                if (target != null)
+                {
+                    target.OnReceiveAction(preset); // 프리셋을 전달하여 OnReceiveAction 호출
+                }
             }
         }
     }
