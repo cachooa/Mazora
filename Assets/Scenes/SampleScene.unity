@@ -438,10 +438,12 @@ MonoBehaviour:
   moveSpeed: 2
   dashMultiplier: 3
   rotationSpeed: 0.4
+  aimingMoveSpeed: 0.8
   jumpForce: 4
   health: 100
   cameraTransform: {fileID: 330585546}
   animator: {fileID: 744627561}
+  animationEventHandler: {fileID: 744627562}
   actionSlots:
   - actionPreset: {fileID: 11400000, guid: de75bdc1f5bad8649b10a5cdeb680b78, type: 2}
     attackDamage: 10

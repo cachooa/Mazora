@@ -5,16 +5,18 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float dashMultiplier = 2f;
     public float rotationSpeed = 1f;
+    public float aimingMoveSpeed = 3f; // 조준 모드에서의 이동 속도
     public float jumpForce = 7f;
     public float health = 100f; // 캐릭터의 체력
     public Transform cameraTransform;
     public Animator animator;
+    public AnimationEventHandler animationEventHandler; // 추가된 필드
 
     [System.Serializable]
     public class ActionSlot
     {
         public ActionPreset actionPreset; // 액션 프리셋
-        public float attackDamage; // 해당 프리셋의 공격력
+        public float attackDamage; // 공격력
     }
 
     public ActionSlot[] actionSlots; // 액션 슬롯 배열
@@ -23,10 +25,21 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool isDashing;
     private bool isPerformingAction;
+    private bool isAiming; // 조준 모드 여부
+    private bool isActionInProgress; // 액션 진행 여부
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+
+        // 상위 오브젝트에서 Animator 및 AnimationEventHandler 찾기
+        animator = GetComponentInChildren<Animator>();
+        animationEventHandler = GetComponentInChildren<AnimationEventHandler>();
+
+        if (animationEventHandler != null)
+        {
+            animationEventHandler.playerController = this;
+        }
     }
 
     void Update()
@@ -35,14 +48,25 @@ public class PlayerController : MonoBehaviour
         {
             Move();
             Rotate();
-            Jump();
+            if (!isAiming) Jump();
         }
 
         if (Input.GetKeyDown(KeyCode.F))
         {
             PerformAction(0); // 첫 번째 액션 슬롯 실행
         }
-        // 다른 키와 액션 슬롯을 연결하려면 추가적인 키 입력 체크를 여기에 추가하세요.
+
+        // 마우스 오른쪽 버튼 입력을 감지하여 조준 모드 전환
+        if (Input.GetMouseButtonDown(1))
+        {
+            isAiming = true;
+            animator.SetBool("IsAiming", true);
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            isAiming = false;
+            animator.SetBool("IsAiming", false);
+        }
     }
 
     void Move()
@@ -58,8 +82,8 @@ public class PlayerController : MonoBehaviour
         forward.Normalize();
         right.Normalize();
 
-        float speed = moveSpeed;
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        float speed = isAiming ? aimingMoveSpeed : moveSpeed;
+        if (!isAiming && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
         {
             speed *= dashMultiplier;
             isDashing = true;
@@ -70,11 +94,22 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector3 movement = (forward * moveVertical + right * moveHorizontal).normalized * speed * Time.deltaTime;
+
+        // 캐릭터를 이동시킴
         Vector3 newPosition = rb.position + movement;
         rb.MovePosition(newPosition);
 
-        animator.SetFloat("Speed", movement.magnitude);
-        animator.SetBool("IsDashing", isDashing);
+        // 애니메이터 매개변수 설정
+        if (isAiming)
+        {
+            animator.SetFloat("MoveX", moveHorizontal);
+            animator.SetFloat("MoveZ", moveVertical);
+        }
+        else
+        {
+            animator.SetFloat("Speed", movement.magnitude);
+            animator.SetBool("IsDashing", isDashing);
+        }
     }
 
     void Rotate()
@@ -82,26 +117,29 @@ public class PlayerController : MonoBehaviour
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
 
-        Vector3 forward = cameraTransform.forward;
-        Vector3 right = cameraTransform.right;
-
-        forward.y = 0f;
-        right.y = 0f;
-        forward.Normalize();
-        right.Normalize();
-
-        Vector3 direction = (forward * moveVertical + right * moveHorizontal).normalized;
-
-        if (direction.magnitude >= 0.1f)
+        if (isAiming)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
-            if (rotationSpeed == 0f)
+            Vector3 lookDirection = cameraTransform.forward;
+            lookDirection.y = 0f;
+            Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 / rotationSpeed * Time.deltaTime);
+        }
+        else
+        {
+            Vector3 forward = cameraTransform.forward;
+            Vector3 right = cameraTransform.right;
+
+            forward.y = 0f;
+            right.y = 0f;
+            forward.Normalize();
+            right.Normalize();
+
+            Vector3 direction = (forward * moveVertical + right * moveHorizontal).normalized;
+
+            if (direction.magnitude >= 0.1f)
             {
-                transform.rotation = targetRotation;
-            }
-            else
-            {
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360f / rotationSpeed * Time.deltaTime);
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 / rotationSpeed * Time.deltaTime);
             }
         }
     }
@@ -117,27 +155,32 @@ public class PlayerController : MonoBehaviour
 
     void PerformAction(int slotIndex)
     {
-        if (slotIndex < 0 || slotIndex >= actionSlots.Length)
+        if (slotIndex < 0 || slotIndex >= actionSlots.Length || isActionInProgress)
         {
-            Debug.LogWarning("Invalid action slot index!");
+            Debug.LogWarning("Invalid action slot index or action already in progress!");
             return;
         }
 
         isPerformingAction = true;
+        isActionInProgress = true;
         ActionSlot slot = actionSlots[slotIndex];
-        
+
         if (slot.actionPreset != null)
         {
-            // 여기서 공격력을 적용하는 로직을 추가합니다.
-            ApplyDamage(slot.attackDamage);
+            // 대상에게 액션 전달
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward); // 카메라 뷰 방향으로 설정
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                ObjectTarget target = hit.collider.GetComponent<ObjectTarget>();
+                if (target != null)
+                {
+                    target.OnReceiveAction(slot.actionPreset); // 액션 프리셋 전달
+                    target.TakeDamage(slot.attackDamage); // 공격력 적용
+                }
+            }
         }
 
         animator.SetTrigger("Action");
-    }
-
-    public void OnActionEnd()
-    {
-        isPerformingAction = false;
     }
 
     void OnCollisionEnter(Collision collision)
@@ -167,15 +210,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void ApplyDamage(float damage)
-    {
-        // 여기에 상대방 캐릭터나 대상에게 데미지를 적용하는 로직을 추가합니다.
-        // 예: 타격된 대상에게 데미지를 적용하는 메서드 호출
-        Debug.Log($"Applying {damage} damage.");
-    }
-
     void Die()
     {
         // 캐릭터 사망 처리 로직
+    }
+
+    // 추가된 메서드
+    public void OnActionEnd()
+    {
+        isPerformingAction = false;
+        isActionInProgress = false;
     }
 }
