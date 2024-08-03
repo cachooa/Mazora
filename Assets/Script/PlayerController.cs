@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float dashMultiplier = 2f;
-    public float rotationSpeed = 1f;
+    public float rotationSpeed = 1f; // 1이면 1초에 360도 회전
     public float aimingMoveSpeed = 3f; // 조준 모드에서의 이동 속도
     public float jumpForce = 7f;
     public float groundCheckDistance = 0.1f; // 지면 체크 거리
@@ -24,15 +25,22 @@ public class PlayerController : MonoBehaviour
     public ActionSlot[] actionSlots; // 액션 슬롯 배열
 
     private Rigidbody rb;
+    private Collider playerCollider;
     private bool isGrounded;
     private bool isDashing;
     private bool isPerformingAction;
     private bool isAiming; // 조준 모드 여부
     private bool isActionInProgress; // 액션 진행 여부
+    public Transform mountPoint; // 탑승 시 위치
+    private GameObject currentVehicle; // 현재 탑승한 오브젝트
+    private bool isMounted = false;
+    private Vector3 originalLocalPosition; // 차량 내 캐릭터의 로컬 위치
+    private Quaternion originalRotation; // 하차 시 돌아갈 원래 회전
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        playerCollider = GetComponent<Collider>();
 
         // 상위 오브젝트에서 Animator 및 AnimationEventHandler 찾기
         animator = GetComponentInChildren<Animator>();
@@ -46,30 +54,50 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        CheckGroundStatus();
-
-        if (!isPerformingAction)
+        if (!isMounted)
         {
-            Move();
-            Rotate();
-            if (!isAiming) Jump();
+            CheckGroundStatus();
+
+            if (!isPerformingAction)
+            {
+                Move();
+                Rotate();
+                if (!isAiming) Jump();
+            }
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                PerformAction(0); // 첫 번째 액션 슬롯 실행
+            }
+
+            // 마우스 오른쪽 버튼 입력을 감지하여 조준 모드 전환
+            if (Input.GetMouseButtonDown(1))
+            {
+                isAiming = true;
+                animator.SetBool("IsAiming", true);
+            }
+            else if (Input.GetMouseButtonUp(1))
+            {
+                isAiming = false;
+                animator.SetBool("IsAiming", false);
+            }
         }
 
-        if (Input.GetKeyDown(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            PerformAction(0); // 첫 번째 액션 슬롯 실행
+            if (isMounted)
+            {
+                Dismount();
+            }
+            else
+            {
+                CheckForMountable();
+            }
         }
 
-        // 마우스 오른쪽 버튼 입력을 감지하여 조준 모드 전환
-        if (Input.GetMouseButtonDown(1))
+        if (isMounted && currentVehicle != null)
         {
-            isAiming = true;
-            animator.SetBool("IsAiming", true);
-        }
-        else if (Input.GetMouseButtonUp(1))
-        {
-            isAiming = false;
-            animator.SetBool("IsAiming", false);
+            HandleVehicleControls();
         }
     }
 
@@ -126,7 +154,7 @@ public class PlayerController : MonoBehaviour
             Vector3 lookDirection = cameraTransform.forward;
             lookDirection.y = 0f;
             Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 / rotationSpeed * Time.deltaTime);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / rotationSpeed) * 360f * Time.deltaTime);
         }
         else
         {
@@ -143,7 +171,7 @@ public class PlayerController : MonoBehaviour
             if (direction.magnitude >= 0.1f)
             {
                 Quaternion targetRotation = Quaternion.LookRotation(direction);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, 360 / rotationSpeed * Time.deltaTime);
+                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / rotationSpeed) * 360f * Time.deltaTime);
             }
         }
     }
@@ -221,5 +249,74 @@ public class PlayerController : MonoBehaviour
     {
         isPerformingAction = false;
         isActionInProgress = false;
+    }
+
+    void CheckForMountable()
+    {
+        // 근처의 모든 콜라이더를 검색하여 탑승 가능한 오브젝트를 찾음
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 5f); // 기본 범위 5f
+        foreach (var hitCollider in hitColliders)
+        {
+            if (hitCollider.CompareTag("Mountable"))
+            {
+                VehicleController vehicleController = hitCollider.GetComponent<VehicleController>();
+                if (vehicleController != null)
+                {
+                    float mountRadius = vehicleController.mountCheckRadius;
+                    if (Vector3.Distance(transform.position, hitCollider.transform.position) <= mountRadius)
+                    {
+                        Mount(hitCollider.gameObject);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    void Mount(GameObject vehicle)
+    {
+        currentVehicle = vehicle;
+        originalLocalPosition = vehicle.transform.InverseTransformPoint(transform.position); // 탑승 시 차량 내 로컬 위치 저장
+        originalRotation = transform.rotation; // 탑승 시 원래 회전 저장
+
+        transform.SetParent(vehicle.transform);
+        transform.localPosition = Vector3.zero; // 오브젝트 내부의 특정 위치로 설정
+        rb.isKinematic = true; // 물리 연산 비활성화
+        playerCollider.enabled = false; // 캐릭터 콜라이더 비활성화
+
+        if (EventSystem.current != null)
+        {
+            EventSystem.current.SetSelectedGameObject(vehicle); // 차량 오브젝트를 선택 상태로 만듦
+            Debug.Log("Vehicle selected: " + vehicle.name);
+        }
+        else
+        {
+            Debug.LogWarning("EventSystem is null!");
+        }
+
+        isMounted = true;
+    }
+
+    void Dismount()
+    {
+        transform.SetParent(null);
+        transform.position = currentVehicle.transform.TransformPoint(originalLocalPosition); // 하차 시 원래 위치로 복귀
+        transform.rotation = originalRotation; // 하차 시 원래 회전으로 복귀
+
+        rb.isKinematic = false; // 물리 연산 활성화
+        playerCollider.enabled = true; // 캐릭터 콜라이더 활성화
+
+        currentVehicle = null;
+        isMounted = false;
+    }
+
+    void HandleVehicleControls()
+    {
+        // 현재 탑승한 오브젝트의 조작 스크립트 호출
+        var vehicleControl = currentVehicle.GetComponent<IVehicleControl>();
+        if (vehicleControl != null)
+        {
+            vehicleControl.Control();
+        }
     }
 }
