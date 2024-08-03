@@ -7,6 +7,8 @@ public class PlayerController : MonoBehaviour
     public float rotationSpeed = 1f;
     public float aimingMoveSpeed = 3f; // 조준 모드에서의 이동 속도
     public float jumpForce = 7f;
+    public float groundCheckDistance = 0.1f; // 지면 체크 거리
+    public LayerMask groundLayer; // 지면 레이어
     public float health = 100f; // 캐릭터의 체력
     public Transform cameraTransform;
     public Animator animator;
@@ -44,6 +46,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        CheckGroundStatus();
+
         if (!isPerformingAction)
         {
             Move();
@@ -153,6 +157,21 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void CheckGroundStatus()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out hit, groundCheckDistance + 0.1f, groundLayer))
+        {
+            isGrounded = true;
+            animator.SetBool("IsGrounded", true);
+        }
+        else
+        {
+            isGrounded = false;
+            animator.SetBool("IsGrounded", false);
+        }
+    }
+
     void PerformAction(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= actionSlots.Length || isActionInProgress)
@@ -181,24 +200,6 @@ public class PlayerController : MonoBehaviour
         }
 
         animator.SetTrigger("Action");
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = true;
-            animator.SetBool("IsGrounded", true);
-        }
-    }
-
-    void OnCollisionExit(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
-            animator.SetBool("IsGrounded", false);
-        }
     }
 
     public void TakeDamage(float damage)
