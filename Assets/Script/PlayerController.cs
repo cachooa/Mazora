@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -36,6 +37,7 @@ public class PlayerController : MonoBehaviour
     private bool isMounted = false;
     private Vector3 originalLocalPosition; // 차량 내 캐릭터의 로컬 위치
     private Quaternion originalRotation; // 하차 시 돌아갈 원래 회전
+    private bool canMoveVehicle = true; // 차량 이동 가능 여부
 
     void Start()
     {
@@ -95,7 +97,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (isMounted && currentVehicle != null)
+        if (isMounted && currentVehicle != null && canMoveVehicle)
         {
             HandleVehicleControls();
         }
@@ -265,7 +267,7 @@ public class PlayerController : MonoBehaviour
                     float mountRadius = vehicleController.mountCheckRadius;
                     if (Vector3.Distance(transform.position, hitCollider.transform.position) <= mountRadius)
                     {
-                        Mount(hitCollider.gameObject);
+                        StartCoroutine(MountWithDelay(hitCollider.gameObject));
                         break;
                     }
                 }
@@ -273,7 +275,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void Mount(GameObject vehicle)
+    IEnumerator MountWithDelay(GameObject vehicle)
     {
         currentVehicle = vehicle;
         originalLocalPosition = vehicle.transform.InverseTransformPoint(transform.position); // 탑승 시 차량 내 로컬 위치 저장
@@ -295,6 +297,9 @@ public class PlayerController : MonoBehaviour
         }
 
         isMounted = true;
+        canMoveVehicle = false; // 차량 이동 비활성화
+        yield return new WaitForSeconds(1f); // 1초 대기
+        canMoveVehicle = true; // 차량 이동 활성화
     }
 
     void Dismount()
@@ -314,7 +319,7 @@ public class PlayerController : MonoBehaviour
     {
         // 현재 탑승한 오브젝트의 조작 스크립트 호출
         var vehicleControl = currentVehicle.GetComponent<IVehicleControl>();
-        if (vehicleControl != null)
+        if (vehicleControl != null && canMoveVehicle)
         {
             vehicleControl.Control();
         }
