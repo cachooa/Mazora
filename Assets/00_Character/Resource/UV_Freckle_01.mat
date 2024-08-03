@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: UV_Freckle_01
-  m_Shader: {fileID: 4800000, guid: e3ccd6cb6c35ffe49ac32f6d5ea98b60, type: 3}
+  m_Shader: {fileID: 4800000, guid: b635278f323e5b7419fa2b2e18b3c9ca, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -16,7 +16,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2451
+  m_CustomRenderQueue: 2999
   stringTagMap: {}
   disabledShaderPasses: []
   m_LockedProperties: 
@@ -35,18 +35,38 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaCutoff: 0.5
     - _ColorBlend: 0
     - _Cutoff: 0.5
     - _Frame_02: 0
     - _Intensity: 1
+    - _Mouth_X_Scale: 1
+    - _Mouth_Y_Scale: 1
     - _Outline_Scale1: 10
     - _Outline_Width1: 0
+    - _QueueControl: 0
+    - _QueueOffset: -1
+    - _ReceiveShadows: 1
     - _Shade_Step: 0.02
     - _Use_SphereNormal: 0
     - __dirty: 0
     m_Colors:
     - _Diffuse_Color: {r: 0, g: 0, b: 0, a: 0}
+    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _Outline_Color: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
