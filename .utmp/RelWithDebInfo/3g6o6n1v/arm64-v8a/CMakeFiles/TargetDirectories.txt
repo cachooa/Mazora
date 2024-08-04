@@ -1,0 +1,5 @@
+I:/Work/Mazora/.utmp/RelWithDebInfo/3g6o6n1v/arm64-v8a/CMakeFiles/edit_cache.dir
+I:/Work/Mazora/.utmp/RelWithDebInfo/3g6o6n1v/arm64-v8a/CMakeFiles/rebuild_cache.dir
+I:/Work/Mazora/.utmp/RelWithDebInfo/3g6o6n1v/arm64-v8a/GameActivity/CMakeFiles/game.dir
+I:/Work/Mazora/.utmp/RelWithDebInfo/3g6o6n1v/arm64-v8a/GameActivity/CMakeFiles/edit_cache.dir
+I:/Work/Mazora/.utmp/RelWithDebInfo/3g6o6n1v/arm64-v8a/GameActivity/CMakeFiles/rebuild_cache.dir
