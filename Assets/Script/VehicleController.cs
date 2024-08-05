@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class VehicleController : MonoBehaviour, IVehicleControl
@@ -10,9 +11,23 @@ public class VehicleController : MonoBehaviour, IVehicleControl
     private float currentMoveSpeed = 0f;
     private Rigidbody rb;
 
+    // Projectile 관련 변수
+    public ProjectilePreset projectilePreset; // ProjectilePreset 참조
+    public Transform projectileSpawnPoint; // 발사체 생성 위치
+    private bool isFiring = false;
+    private float lastFireTime; // 마지막 발사 시간
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        if (projectileSpawnPoint == null)
+        {
+            Debug.LogError("ProjectileSpawnPoint가 설정되지 않았습니다.");
+        }
+        if (projectilePreset == null)
+        {
+            Debug.LogError("ProjectilePreset이 설정되지 않았습니다.");
+        }
     }
 
     void OnDrawGizmosSelected()
@@ -72,5 +87,48 @@ public class VehicleController : MonoBehaviour, IVehicleControl
             // 속도를 절반으로 줄임
             currentMoveSpeed *= 0.5f;
         }
+    }
+
+    public void StartFiring()
+    {
+        if (Time.time - lastFireTime >= 1f / projectilePreset.fireRate)
+        {
+            isFiring = true;
+            lastFireTime = Time.time;
+            StartCoroutine(FireProjectiles());
+        }
+    }
+
+    public void StopFiring()
+    {
+        isFiring = false;
+    }
+
+    private IEnumerator FireProjectiles()
+    {
+        while (isFiring)
+        {
+            FireProjectile();
+            yield return new WaitForSeconds(1f / projectilePreset.fireRate);
+        }
+    }
+
+    private void FireProjectile()
+    {
+        if (projectilePreset != null && projectilePreset.prefabSlot != null && projectileSpawnPoint != null)
+        {
+            GameObject projectile = Instantiate(projectilePreset.prefabSlot, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
+            Debug.Log("발사체 생성: " + projectile.name + " at " + projectileSpawnPoint.position);
+            Destroy(projectile, projectilePreset.destroyAfterSeconds);
+        }
+        else
+        {
+            Debug.LogWarning("ProjectilePreset, prefabSlot 또는 projectileSpawnPoint가 설정되지 않았습니다.");
+        }
+    }
+
+    public void SetMounted(bool mounted)
+    {
+        // 차량 탑승 상태 설정
     }
 }

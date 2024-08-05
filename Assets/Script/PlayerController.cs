@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public float aimingMoveSpeed = 3f; // 조준 모드에서의 이동 속도
     public float jumpForce = 7f;
     public float groundCheckDistance = 0.1f; // 지면 체크 거리
+    public float mountCheckDistance = 2f; // 탑승 가능 거리
     public LayerMask groundLayer; // 지면 레이어
     public float health = 100f; // 캐릭터의 체력
     public Transform cameraTransform;
@@ -297,9 +298,13 @@ public class PlayerController : MonoBehaviour
         }
 
         isMounted = true;
-        canMoveVehicle = false; // 차량 이동 비활성화
-        yield return new WaitForSeconds(1f); // 1초 대기
-        canMoveVehicle = true; // 차량 이동 활성화
+        var vehicleController = currentVehicle.GetComponent<VehicleController>();
+        if (vehicleController != null)
+        {
+            vehicleController.SetMounted(true);
+        }
+        
+        yield return null; // 기다림 없이 바로 진행
     }
 
     void Dismount()
@@ -311,6 +316,12 @@ public class PlayerController : MonoBehaviour
         rb.isKinematic = false; // 물리 연산 활성화
         playerCollider.enabled = true; // 캐릭터 콜라이더 활성화
 
+        var vehicleController = currentVehicle.GetComponent<VehicleController>();
+        if (vehicleController != null)
+        {
+            vehicleController.SetMounted(false);
+        }
+        
         currentVehicle = null;
         isMounted = false;
     }
@@ -322,6 +333,24 @@ public class PlayerController : MonoBehaviour
         if (vehicleControl != null && canMoveVehicle)
         {
             vehicleControl.Control();
+        }
+
+        // 마우스 왼쪽 버튼 입력 처리
+        if (Input.GetMouseButtonDown(0))
+        {
+            var vehicleController = currentVehicle.GetComponent<VehicleController>();
+            if (vehicleController != null)
+            {
+                vehicleController.StartFiring();
+            }
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            var vehicleController = currentVehicle.GetComponent<VehicleController>();
+            if (vehicleController != null)
+            {
+                vehicleController.StopFiring();
+            }
         }
     }
 }
