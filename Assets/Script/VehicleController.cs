@@ -1,6 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
+[System.Serializable]
+public class ProjectileGroup
+{
+    public ProjectilePreset projectilePreset;
+    public Transform projectileSpawnPoint;
+}
+
 public class VehicleController : MonoBehaviour, IVehicleControl
 {
     public float maxMoveSpeed = 10f;
@@ -11,22 +18,19 @@ public class VehicleController : MonoBehaviour, IVehicleControl
     private float currentMoveSpeed = 0f;
     private Rigidbody rb;
 
-    // Projectile 관련 변수
-    public ProjectilePreset projectilePreset; // ProjectilePreset 참조
-    public Transform projectileSpawnPoint; // 발사체 생성 위치
+    // Projectile 그룹 관련 변수
+    public ProjectileGroup[] projectileGroups; // ProjectileGroup 참조 배열
+    private int currentGroupIndex = 0; // 현재 선택된 그룹 인덱스
     private bool isFiring = false;
     private float lastFireTime; // 마지막 발사 시간
+    private Coroutine firingCoroutine;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        if (projectileSpawnPoint == null)
+        if (projectileGroups.Length == 0)
         {
-            Debug.LogError("ProjectileSpawnPoint가 설정되지 않았습니다.");
-        }
-        if (projectilePreset == null)
-        {
-            Debug.LogError("ProjectilePreset이 설정되지 않았습니다.");
+            Debug.LogError("ProjectileGroups가 설정되지 않았습니다.");
         }
     }
 
@@ -77,6 +81,34 @@ public class VehicleController : MonoBehaviour, IVehicleControl
             Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
             rb.MoveRotation(rb.rotation * turnRotation);
         }
+
+        // 프리셋 변경 입력 처리
+        if (Input.GetKeyDown(KeyCode.Alpha1)) ChangePreset(0);
+        if (Input.GetKeyDown(KeyCode.Alpha2)) ChangePreset(1);
+        if (Input.GetKeyDown(KeyCode.Alpha3)) ChangePreset(2);
+        if (Input.GetKeyDown(KeyCode.Alpha4)) ChangePreset(3);
+
+        // 현재 인덱스가 배열 크기를 넘지 않도록 제한
+        currentGroupIndex = Mathf.Clamp(currentGroupIndex, 0, projectileGroups.Length - 1);
+    }
+
+    void ChangePreset(int index)
+    {
+        if (index >= 0 && index < projectileGroups.Length && projectileGroups[index].projectilePreset != null && projectileGroups[index].projectileSpawnPoint != null)
+        {
+            currentGroupIndex = index;
+            Debug.Log("현재 프리셋 인덱스: " + currentGroupIndex);
+
+            if (isFiring)
+            {
+                StopFiring();
+                StartFiring();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("유효하지 않은 프리셋 인덱스 또는 설정되지 않은 프리셋입니다.");
+        }
     }
 
     void OnCollisionEnter(Collision collision)
@@ -91,17 +123,21 @@ public class VehicleController : MonoBehaviour, IVehicleControl
 
     public void StartFiring()
     {
-        if (Time.time - lastFireTime >= 1f / projectilePreset.fireRate)
+        if (firingCoroutine == null)
         {
             isFiring = true;
-            lastFireTime = Time.time;
-            StartCoroutine(FireProjectiles());
+            firingCoroutine = StartCoroutine(FireProjectiles());
         }
     }
 
     public void StopFiring()
     {
-        isFiring = false;
+        if (firingCoroutine != null)
+        {
+            StopCoroutine(firingCoroutine);
+            firingCoroutine = null;
+            isFiring = false;
+        }
     }
 
     private IEnumerator FireProjectiles()
@@ -109,17 +145,27 @@ public class VehicleController : MonoBehaviour, IVehicleControl
         while (isFiring)
         {
             FireProjectile();
-            yield return new WaitForSeconds(1f / projectilePreset.fireRate);
+            yield return new WaitForSeconds(1f / projectileGroups[currentGroupIndex].projectilePreset.fireRate);
         }
     }
 
     private void FireProjectile()
     {
-        if (projectilePreset != null && projectilePreset.prefabSlot != null && projectileSpawnPoint != null)
+        ProjectileGroup currentGroup = projectileGroups[currentGroupIndex];
+        if (currentGroup.projectilePreset != null && currentGroup.projectilePreset.prefabSlot != null && currentGroup.projectileSpawnPoint != null)
         {
-            GameObject projectile = Instantiate(projectilePreset.prefabSlot, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
-            Debug.Log("발사체 생성: " + projectile.name + " at " + projectileSpawnPoint.position);
-            Destroy(projectile, projectilePreset.destroyAfterSeconds);
+            Vector3 spawnPosition = currentGroup.projectileSpawnPoint.position + currentGroup.projectileSpawnPoint.forward * 0.5f; // 본체로부터 약간 떨어진 위치
+            GameObject projectile = Instantiate(currentGroup.projectilePreset.prefabSlot, spawnPosition, currentGroup.projectileSpawnPoint.rotation);
+            Debug.Log("발사체 생성: " + projectile.name + " at " + spawnPosition);
+
+            ParticleDamage particleDamage = projectile.GetComponent<ParticleDamage>();
+            if (particleDamage != null)
+            {
+                particleDamage.SetProjectilePreset(currentGroup.projectilePreset);
+                Debug.Log("ParticleDamage 설정됨: " + particleDamage);
+            }
+
+            Destroy(projectile, currentGroup.projectilePreset.destroyAfterSeconds);
         }
         else
         {

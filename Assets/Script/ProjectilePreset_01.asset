@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   prefabSlot: {fileID: 8188081546118935717, guid: bb41e7a8569ec0a47bf3f82bc9b42fa7, type: 3}
   fireRate: 6
-  destroyAfterSeconds: 3
+  actionForce: 2
+  destroyAfterSeconds: 2

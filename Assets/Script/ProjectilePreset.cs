@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "ProjectilePreset", menuName = "ScriptableObjects/ProjectilePreset", order = 1)]
 public class ProjectilePreset : ScriptableObject
 {
-    public GameObject prefabSlot; // 발사체 프리팹
-    public float fireRate = 1f; // 연사 속도 (초당 발사 횟수)
-    public float destroyAfterSeconds = 5f; // 발사체가 생성된 후 삭제될 때까지의 시간
+    public GameObject prefabSlot;
+    public float fireRate;
+    public float actionForce; // 액션 시 가할 힘 (데미지 및 힘으로 사용)
+    public float destroyAfterSeconds;
 }
