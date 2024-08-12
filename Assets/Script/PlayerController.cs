@@ -353,4 +353,25 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
+    // Getter/Setter 메서드 추가
+    public GameObject GetCurrentVehicle()
+    {
+        return currentVehicle;
+    }
+
+    public void SetCurrentVehicle(GameObject vehicle)
+    {
+        currentVehicle = vehicle;
+    }
+
+    public bool GetIsMounted()
+    {
+        return isMounted;
+    }
+
+    public void SetIsMounted(bool mounted)
+    {
+        isMounted = mounted;
+    }
 }
