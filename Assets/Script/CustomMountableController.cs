@@ -19,10 +19,9 @@ public class CustomMountableController : MonoBehaviour
     private bool isMounted = false;
     private bool isDashing = false;
     private bool isAiming = false;
-    private bool isJumping = false;
 
     public Transform cameraTransform; // 카메라 참조
-    public Animator animator; // 애니메이터 참조
+    public Animator animator; // 탑승 오브젝트의 애니메이터 참조
 
     private Vector3 originalLocalPosition; // 탑승 시 로컬 위치 저장
     private Quaternion originalRotation; // 탑승 시 로컬 회전 저장
@@ -75,6 +74,12 @@ public class CustomMountableController : MonoBehaviour
             // 애니메이터 파라미터 업데이트
             UpdateAnimatorParameters();
         }
+
+        // Space 키를 눌렀을 때 직접적으로 Jump 트리거를 설정
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TriggerJump();
+        }
     }
 
     void Control()
@@ -105,25 +110,22 @@ public class CustomMountableController : MonoBehaviour
 
         currentSpeed = new Vector3(moveHorizontal, 0, moveVertical).magnitude * speed;
 
-        if (!isJumping) // 점프 중이 아닐 때만 이동 처리
-        {
-            Vector3 movement = (forward * moveVertical + right * moveHorizontal).normalized * speed * Time.deltaTime;
-            rb.MovePosition(rb.position + movement);
+        Vector3 movement = (forward * moveVertical + right * moveHorizontal).normalized * speed * Time.deltaTime;
+        rb.MovePosition(rb.position + movement);
 
-            if (isAiming)
-            {
-                // 조준 시 캐릭터를 카메라 방향으로 회전
-                Vector3 lookDirection = cameraTransform.forward;
-                lookDirection.y = 0f;
-                Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / currentRotationSpeed) * 360f * Time.deltaTime);
-            }
-            else if (movement.magnitude > 0)
-            {
-                // 일반 이동 시 이동 방향으로 회전
-                Quaternion targetRotation = Quaternion.LookRotation(movement);
-                transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / currentRotationSpeed) * 360f * Time.deltaTime);
-            }
+        if (isAiming)
+        {
+            // 조준 시 캐릭터를 카메라 방향으로 회전
+            Vector3 lookDirection = cameraTransform.forward;
+            lookDirection.y = 0f;
+            Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / currentRotationSpeed) * 360f * Time.deltaTime);
+        }
+        else if (movement.magnitude > 0)
+        {
+            // 일반 이동 시 이동 방향으로 회전
+            Quaternion targetRotation = Quaternion.LookRotation(movement);
+            transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / currentRotationSpeed) * 360f * Time.deltaTime);
         }
 
         if (isGrounded && Input.GetKeyDown(KeyCode.Space))
@@ -139,11 +141,10 @@ public class CustomMountableController : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(transform.position + Vector3.up * 0.1f, Vector3.down, out hit, groundCheckDistance + 0.1f, groundLayer))
         {
-            if (!isGrounded && isJumping && rb.linearVelocity.y <= 0)
+            if (!isGrounded && rb.linearVelocity.y <= 0)
             {
-                // 착지 상태로 업데이트
-                isJumping = false;
                 animator.ResetTrigger("Jump");
+                Debug.Log("Landed: Jump trigger reset.");
             }
 
             isGrounded = true;
@@ -160,13 +161,30 @@ public class CustomMountableController : MonoBehaviour
     {
         if (isGrounded) // 지면에 있을 때만 점프 가능
         {
+            Debug.Log("Jumping: Grounded and Space key pressed.");
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false; // 점프를 시작했으므로 지면에 있지 않음으로 설정
-            isJumping = true; // 점프 상태로 설정
-            animator.SetTrigger("Jump"); // 점프 애니메이션 트리거
+            
+            // 탑승 오브젝트의 애니메이터로 트리거 설정
+            animator.SetTrigger("Jump");
+            Debug.Log("Jump trigger set.");
 
             // 애니메이션 파라미터 업데이트
             UpdateAnimatorParameters();
+        }
+        else
+        {
+            Debug.Log("Jump failed: Not grounded.");
+        }
+    }
+
+    // Space 키를 누르면 직접적으로 Jump 트리거를 설정
+    void TriggerJump()
+    {
+        if (isMounted && animator != null)
+        {
+            animator.SetTrigger("Jump");
+            Debug.Log("Jump trigger directly set on mount object.");
         }
     }
 
@@ -254,18 +272,14 @@ public class CustomMountableController : MonoBehaviour
     {
         if (animator == null) return;
 
-        // 점프 상태일 때는 다른 파라미터를 업데이트하지 않음
-        if (!isJumping)
-        {
-            animator.SetFloat("Speed", currentSpeed);
-            animator.SetBool("IsDashing", isDashing);
-            animator.SetBool("IsAiming", isAiming);
-            animator.SetFloat("MoveX", Input.GetAxis("Horizontal"));
-            animator.SetFloat("MoveZ", Input.GetAxis("Vertical"));
-        }
+        animator.SetFloat("Speed", currentSpeed);
+        animator.SetBool("IsDashing", isDashing);
+        animator.SetBool("IsAiming", isAiming);
+        animator.SetFloat("MoveX", Input.GetAxis("Horizontal"));
+        animator.SetFloat("MoveZ", Input.GetAxis("Vertical"));
 
-        // 점프 상태를 애니메이터에 반영
-        animator.SetBool("IsJumping", isJumping);
+        // 지면 상태를 애니메이터에 반영
+        animator.SetBool("IsGrounded", isGrounded);
     }
 
     void OnDrawGizmosSelected()
