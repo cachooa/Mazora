@@ -5,9 +5,9 @@ public class CustomMountableController : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float dashMultiplier = 2f;
-    public float rotationSpeed = 1f; // 회전 시간이 1이면 1초, 0.5면 0.5초 동안 회전
+    public float rotationSpeed = 1f;
     public float aimingMoveSpeed = 3f;
-    public float aimingRotationSpeed = 0.5f; // aim 상황에서의 회전 속도 조정
+    public float aimingRotationSpeed = 0.5f;
     public float jumpForce = 7f;
     public float groundCheckDistance = 0.1f;
     public float mountCheckRadius = 5f;
@@ -20,27 +20,37 @@ public class CustomMountableController : MonoBehaviour
     private bool isDashing = false;
     private bool isAiming = false;
 
-    public Transform cameraTransform; // 카메라 참조
-    public Animator animator; // 탑승 오브젝트의 애니메이터 참조
+    public Transform cameraTransform;
+    public Animator animator;
 
-    private Vector3 originalLocalPosition; // 탑승 시 로컬 위치 저장
-    private Quaternion originalRotation; // 탑승 시 로컬 회전 저장
-    private float currentSpeed; // 현재 이동 속도
+    private Vector3 originalLocalPosition;
+    private Quaternion originalRotation;
+    private float currentSpeed;
+
+    // Projectile 관련 변수
+    public ProjectileGroup[] projectileGroups; // 발사체 그룹 배열
+    private int currentGroupIndex = 0;
+    private bool isFiring = false;
+    private Coroutine firingCoroutine;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
 
-        // 만약 cameraTransform이 할당되지 않았다면, 메인 카메라를 자동으로 할당
         if (cameraTransform == null)
         {
             cameraTransform = Camera.main.transform;
         }
 
-        // Animator를 자동으로 가져옴
         if (animator == null)
         {
             animator = GetComponent<Animator>();
+        }
+
+        // 발사체 그룹이 설정되었는지 확인
+        if (projectileGroups.Length == 0)
+        {
+            Debug.LogError("ProjectileGroups가 설정되지 않았습니다.");
         }
     }
 
@@ -71,14 +81,23 @@ public class CustomMountableController : MonoBehaviour
                 isAiming = false;
             }
 
-            // 애니메이터 파라미터 업데이트
-            UpdateAnimatorParameters();
-        }
+            // 마우스 왼쪽 버튼을 누르면 발사체 발사
+            if (Input.GetMouseButtonDown(0))
+            {
+                StartFiring();
+            }
+            if (Input.GetMouseButtonUp(0))
+            {
+                StopFiring();
+            }
 
-        // Space 키를 눌렀을 때 직접적으로 Jump 트리거를 설정
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            TriggerJump();
+            // 숫자 키를 누르면 프리셋 변경
+            if (Input.GetKeyDown(KeyCode.Alpha1)) ChangePreset(0);
+            if (Input.GetKeyDown(KeyCode.Alpha2)) ChangePreset(1);
+            if (Input.GetKeyDown(KeyCode.Alpha3)) ChangePreset(2);
+            if (Input.GetKeyDown(KeyCode.Alpha4)) ChangePreset(3);
+
+            UpdateAnimatorParameters();
         }
     }
 
@@ -90,7 +109,7 @@ public class CustomMountableController : MonoBehaviour
         Vector3 forward = cameraTransform.forward;
         Vector3 right = cameraTransform.right;
 
-        forward.y = 0f; // 수평 이동만 고려
+        forward.y = 0f;
         right.y = 0f;
         forward.Normalize();
         right.Normalize();
@@ -115,7 +134,6 @@ public class CustomMountableController : MonoBehaviour
 
         if (isAiming)
         {
-            // 조준 시 캐릭터를 카메라 방향으로 회전
             Vector3 lookDirection = cameraTransform.forward;
             lookDirection.y = 0f;
             Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
@@ -123,7 +141,6 @@ public class CustomMountableController : MonoBehaviour
         }
         else if (movement.magnitude > 0)
         {
-            // 일반 이동 시 이동 방향으로 회전
             Quaternion targetRotation = Quaternion.LookRotation(movement);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / currentRotationSpeed) * 360f * Time.deltaTime);
         }
@@ -134,6 +151,76 @@ public class CustomMountableController : MonoBehaviour
         }
 
         CheckGroundStatus();
+    }
+
+    void ChangePreset(int index)
+    {
+        if (index >= 0 && index < projectileGroups.Length && projectileGroups[index].projectilePreset != null && projectileGroups[index].projectileSpawnPoint != null)
+        {
+            currentGroupIndex = index;
+            Debug.Log("현재 프리셋 인덱스: " + currentGroupIndex);
+
+            if (isFiring)
+            {
+                StopFiring();
+                StartFiring();
+            }
+        }
+        else
+        {
+            Debug.LogWarning("유효하지 않은 프리셋 인덱스 또는 설정되지 않은 프리셋입니다.");
+        }
+    }
+
+    void StartFiring()
+    {
+        if (firingCoroutine == null)
+        {
+            isFiring = true;
+            firingCoroutine = StartCoroutine(FireProjectiles());
+        }
+    }
+
+    void StopFiring()
+    {
+        if (firingCoroutine != null)
+        {
+            StopCoroutine(firingCoroutine);
+            firingCoroutine = null;
+            isFiring = false;
+        }
+    }
+
+    private IEnumerator FireProjectiles()
+    {
+        while (isFiring)
+        {
+            FireProjectile();
+            yield return new WaitForSeconds(1f / projectileGroups[currentGroupIndex].projectilePreset.fireRate);
+        }
+    }
+
+    private void FireProjectile()
+    {
+        ProjectileGroup currentGroup = projectileGroups[currentGroupIndex];
+        if (currentGroup.projectilePreset != null && currentGroup.projectilePreset.prefabSlot != null && currentGroup.projectileSpawnPoint != null)
+        {
+            Vector3 spawnPosition = currentGroup.projectileSpawnPoint.position + currentGroup.projectileSpawnPoint.forward * 0.5f;
+            GameObject projectile = Instantiate(currentGroup.projectilePreset.prefabSlot, spawnPosition, currentGroup.projectileSpawnPoint.rotation);
+            Debug.Log("발사체 생성: " + projectile.name + " at " + spawnPosition);
+
+            ParticleDamage particleDamage = projectile.GetComponent<ParticleDamage>();
+            if (particleDamage != null)
+            {
+                particleDamage.SetProjectilePreset(currentGroup.projectilePreset);
+            }
+
+            Destroy(projectile, currentGroup.projectilePreset.destroyAfterSeconds);
+        }
+        else
+        {
+            Debug.LogWarning("ProjectilePreset, prefabSlot 또는 projectileSpawnPoint가 설정되지 않았습니다.");
+        }
     }
 
     void CheckGroundStatus()
@@ -159,17 +246,15 @@ public class CustomMountableController : MonoBehaviour
 
     void Jump()
     {
-        if (isGrounded) // 지면에 있을 때만 점프 가능
+        if (isGrounded)
         {
             Debug.Log("Jumping: Grounded and Space key pressed.");
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false; // 점프를 시작했으므로 지면에 있지 않음으로 설정
-            
-            // 탑승 오브젝트의 애니메이터로 트리거 설정
+            isGrounded = false;
+
             animator.SetTrigger("Jump");
             Debug.Log("Jump trigger set.");
 
-            // 애니메이션 파라미터 업데이트
             UpdateAnimatorParameters();
         }
         else
@@ -178,7 +263,6 @@ public class CustomMountableController : MonoBehaviour
         }
     }
 
-    // Space 키를 누르면 직접적으로 Jump 트리거를 설정
     void TriggerJump()
     {
         if (isMounted && animator != null)
@@ -210,26 +294,21 @@ public class CustomMountableController : MonoBehaviour
         playerController = controller;
         isMounted = true;
 
-        // 플레이어 이동 비활성화
         playerController.enabled = false;
 
-        // 플레이어의 로컬 위치와 회전을 기억
         originalLocalPosition = transform.InverseTransformPoint(playerController.transform.position);
         originalRotation = playerController.transform.rotation;
 
-        // 플레이어를 탑승 오브젝트의 하단 (로컬 좌표 0, 0, 0)으로 이동
         playerController.transform.SetParent(transform);
         playerController.transform.localPosition = Vector3.zero;
         playerController.transform.localRotation = Quaternion.identity;
 
-        // Rigidbody 비활성화
         Rigidbody playerRb = playerController.GetComponent<Rigidbody>();
         if (playerRb != null)
         {
-            playerRb.isKinematic = true; // 물리 연산 비활성화
+            playerRb.isKinematic = true;
         }
 
-        // 플레이어 콜라이더 비활성화
         Collider playerCollider = playerController.GetComponent<Collider>();
         if (playerCollider != null)
         {
@@ -241,24 +320,19 @@ public class CustomMountableController : MonoBehaviour
     {
         isMounted = false;
 
-        // 플레이어 이동 다시 활성화
         playerController.enabled = true;
 
-        // 플레이어를 오브젝트의 하위 구조에서 제거
         playerController.transform.SetParent(null);
 
-        // 플레이어의 위치를 탑승 시 기억된 로컬 좌표로 복귀
         playerController.transform.position = transform.TransformPoint(originalLocalPosition);
         playerController.transform.rotation = originalRotation;
 
-        // Rigidbody 다시 활성화
         Rigidbody playerRb = playerController.GetComponent<Rigidbody>();
         if (playerRb != null)
         {
-            playerRb.isKinematic = false; // 물리 연산 활성화
+            playerRb.isKinematic = false;
         }
 
-        // 플레이어 콜라이더 다시 활성화
         Collider playerCollider = playerController.GetComponent<Collider>();
         if (playerCollider != null)
         {
@@ -278,7 +352,6 @@ public class CustomMountableController : MonoBehaviour
         animator.SetFloat("MoveX", Input.GetAxis("Horizontal"));
         animator.SetFloat("MoveZ", Input.GetAxis("Vertical"));
 
-        // 지면 상태를 애니메이터에 반영
         animator.SetBool("IsGrounded", isGrounded);
     }
 
