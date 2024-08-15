@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: ProjectilePreset_01
   m_EditorClassIdentifier: 
   prefabSlot: {fileID: 8188081546118935717, guid: bb41e7a8569ec0a47bf3f82bc9b42fa7, type: 3}
-  fireRate: 6
+  fireRate: 10
   actionForce: 2
   destroyAfterSeconds: 2

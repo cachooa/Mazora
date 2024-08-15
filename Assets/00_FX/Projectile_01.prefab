@@ -19840,7 +19840,7 @@ ParticleSystem:
     startSpeed:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 20
+      scalar: 40
       minScalar: 3
       maxCurve:
         serializedVersion: 2
@@ -19958,7 +19958,7 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 0.1
+      scalar: 0.06
       minScalar: 0.02
       maxCurve:
         serializedVersion: 2
@@ -24564,7 +24564,7 @@ ParticleSystemRenderer:
   m_MaxParticleSize: 1
   m_CameraVelocityScale: 0
   m_VelocityScale: 0
-  m_LengthScale: 9
+  m_LengthScale: 40
   m_SortingFudge: 0
   m_NormalDirection: 1
   m_ShadowBias: 0
@@ -24601,4 +24601,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 754bde70f21a1734a961042889ea2caa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damage: 1

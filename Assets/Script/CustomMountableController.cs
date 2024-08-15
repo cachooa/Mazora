@@ -1,6 +1,13 @@
 using System.Collections;
 using UnityEngine;
 
+[System.Serializable]
+public class CustomProjectileGroup
+{
+    public ProjectilePreset projectilePreset;
+    public Transform[] projectileSpawnPoints;
+}
+
 public class CustomMountableController : MonoBehaviour
 {
     public float moveSpeed = 5f;
@@ -27,11 +34,12 @@ public class CustomMountableController : MonoBehaviour
     private Quaternion originalRotation;
     private float currentSpeed;
 
-    // Projectile 관련 변수
-    public ProjectileGroup[] projectileGroups; // 발사체 그룹 배열
+    public CustomProjectileGroup[] projectileGroups;
     private int currentGroupIndex = 0;
     private bool isFiring = false;
     private Coroutine firingCoroutine;
+
+    private static readonly int FireBlendParam = Animator.StringToHash("FireBlend");
 
     void Start()
     {
@@ -47,7 +55,6 @@ public class CustomMountableController : MonoBehaviour
             animator = GetComponent<Animator>();
         }
 
-        // 발사체 그룹이 설정되었는지 확인
         if (projectileGroups.Length == 0)
         {
             Debug.LogError("ProjectileGroups가 설정되지 않았습니다.");
@@ -81,21 +88,32 @@ public class CustomMountableController : MonoBehaviour
                 isAiming = false;
             }
 
-            // 마우스 왼쪽 버튼을 누르면 발사체 발사
             if (Input.GetMouseButtonDown(0))
             {
                 StartFiring();
+                if (animator != null)
+                {
+                    animator.SetFloat(FireBlendParam, 1f);
+                }
             }
             if (Input.GetMouseButtonUp(0))
             {
                 StopFiring();
+                if (animator != null)
+                {
+                    animator.SetFloat(FireBlendParam, 0f);
+                }
             }
 
-            // 숫자 키를 누르면 프리셋 변경
             if (Input.GetKeyDown(KeyCode.Alpha1)) ChangePreset(0);
             if (Input.GetKeyDown(KeyCode.Alpha2)) ChangePreset(1);
             if (Input.GetKeyDown(KeyCode.Alpha3)) ChangePreset(2);
             if (Input.GetKeyDown(KeyCode.Alpha4)) ChangePreset(3);
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                Jump();
+            }
 
             UpdateAnimatorParameters();
         }
@@ -145,17 +163,12 @@ public class CustomMountableController : MonoBehaviour
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, (1f / currentRotationSpeed) * 360f * Time.deltaTime);
         }
 
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
-        {
-            Jump();
-        }
-
         CheckGroundStatus();
     }
 
     void ChangePreset(int index)
     {
-        if (index >= 0 && index < projectileGroups.Length && projectileGroups[index].projectilePreset != null && projectileGroups[index].projectileSpawnPoint != null)
+        if (index >= 0 && index < projectileGroups.Length && projectileGroups[index].projectilePreset != null && projectileGroups[index].projectileSpawnPoints != null)
         {
             currentGroupIndex = index;
             Debug.Log("현재 프리셋 인덱스: " + currentGroupIndex);
@@ -202,24 +215,49 @@ public class CustomMountableController : MonoBehaviour
 
     private void FireProjectile()
     {
-        ProjectileGroup currentGroup = projectileGroups[currentGroupIndex];
-        if (currentGroup.projectilePreset != null && currentGroup.projectilePreset.prefabSlot != null && currentGroup.projectileSpawnPoint != null)
+        CustomProjectileGroup currentGroup = projectileGroups[currentGroupIndex];
+        if (currentGroup.projectilePreset != null && currentGroup.projectilePreset.prefabSlot != null && currentGroup.projectileSpawnPoints != null)
         {
-            Vector3 spawnPosition = currentGroup.projectileSpawnPoint.position + currentGroup.projectileSpawnPoint.forward * 0.5f;
-            GameObject projectile = Instantiate(currentGroup.projectilePreset.prefabSlot, spawnPosition, currentGroup.projectileSpawnPoint.rotation);
-            Debug.Log("발사체 생성: " + projectile.name + " at " + spawnPosition);
-
-            ParticleDamage particleDamage = projectile.GetComponent<ParticleDamage>();
-            if (particleDamage != null)
+            foreach (Transform spawnPoint in currentGroup.projectileSpawnPoints)
             {
-                particleDamage.SetProjectilePreset(currentGroup.projectilePreset);
-            }
+                if (spawnPoint != null)
+                {
+                    Vector3 spawnPosition = spawnPoint.position + spawnPoint.forward * 0.5f;
+                    GameObject projectile = Instantiate(currentGroup.projectilePreset.prefabSlot, spawnPosition, spawnPoint.rotation);
+                    Debug.Log("발사체 생성: " + projectile.name + " at " + spawnPosition);
 
-            Destroy(projectile, currentGroup.projectilePreset.destroyAfterSeconds);
+                    ParticleDamage particleDamage = projectile.GetComponent<ParticleDamage>();
+                    if (particleDamage != null)
+                    {
+                        particleDamage.SetProjectilePreset(currentGroup.projectilePreset);
+                    }
+
+                    Destroy(projectile, currentGroup.projectilePreset.destroyAfterSeconds);
+                }
+            }
         }
         else
         {
-            Debug.LogWarning("ProjectilePreset, prefabSlot 또는 projectileSpawnPoint가 설정되지 않았습니다.");
+            Debug.LogWarning("ProjectilePreset, prefabSlot 또는 projectileSpawnPoints가 설정되지 않았습니다.");
+        }
+    }
+
+    void Jump()
+    {
+        if (isGrounded)
+        {
+            Debug.Log("Jumping: Grounded and Space key pressed.");
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            isGrounded = false;
+
+            animator.SetTrigger("Jump");
+            Debug.Log("Jump trigger set.");
+
+            UpdateAnimatorParameters();
+        }
+        else
+        {
+            Debug.Log("Jump failed: Not grounded.");
         }
     }
 
@@ -241,25 +279,6 @@ public class CustomMountableController : MonoBehaviour
         {
             isGrounded = false;
             animator.SetBool("IsGrounded", false);
-        }
-    }
-
-    void Jump()
-    {
-        if (isGrounded)
-        {
-            Debug.Log("Jumping: Grounded and Space key pressed.");
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            isGrounded = false;
-
-            animator.SetTrigger("Jump");
-            Debug.Log("Jump trigger set.");
-
-            UpdateAnimatorParameters();
-        }
-        else
-        {
-            Debug.Log("Jump failed: Not grounded.");
         }
     }
 
