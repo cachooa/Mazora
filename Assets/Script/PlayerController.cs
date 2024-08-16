@@ -33,7 +33,6 @@ public class PlayerController : MonoBehaviour
     private bool isPerformingAction;
     private bool isAiming;
     private bool isActionInProgress;
-    public Transform mountPoint;
     private GameObject currentVehicle;
     private bool isMounted = false;
     private Vector3 originalLocalPosition;
