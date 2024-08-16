@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Playables;
 
 [System.Serializable]
 public class CustomProjectileGroup
@@ -29,6 +30,7 @@ public class CustomMountableController : MonoBehaviour
 
     public Transform cameraTransform;
     public Animator animator;
+    public PlayableDirector mountTimeline;
 
     private Vector3 originalLocalPosition;
     private Quaternion originalRotation;
@@ -59,10 +61,25 @@ public class CustomMountableController : MonoBehaviour
         {
             Debug.LogError("ProjectileGroups가 설정되지 않았습니다.");
         }
+
+        if (mountTimeline != null)
+        {
+            mountTimeline.stopped += OnTimelineStopped;
+            mountTimeline.gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("mountTimeline is not assigned!");
+        }
     }
 
     void Update()
     {
+        if (mountTimeline != null && mountTimeline.state == PlayState.Playing)
+        {
+            return; // 타임라인 재생 중에는 입력 무시
+        }
+
         if (Input.GetKeyDown(KeyCode.E))
         {
             if (isMounted)
@@ -71,7 +88,7 @@ public class CustomMountableController : MonoBehaviour
             }
             else
             {
-                CheckForMountable();
+                StartMountProcess();
             }
         }
 
@@ -116,6 +133,49 @@ public class CustomMountableController : MonoBehaviour
             }
 
             UpdateAnimatorParameters();
+        }
+    }
+
+    void StartMountProcess()
+    {
+        CheckForMountable();
+        
+        if (playerController == null)
+        {
+            Debug.LogError("playerController is null after CheckForMountable!");
+            return;
+        }
+
+        // 캐릭터를 탑승 오브젝트의 중심으로 이동
+        playerController.transform.position = transform.position;
+
+        // 타임라인 활성화 및 재생
+        if (mountTimeline != null)
+        {
+            Debug.Log("Activating and playing mount timeline.");
+            mountTimeline.gameObject.SetActive(true);
+            mountTimeline.Play();
+        }
+        else
+        {
+            Debug.LogError("mountTimeline is not set!");
+        }
+    }
+
+    void OnTimelineStopped(PlayableDirector director)
+    {
+        if (director == mountTimeline)
+        {
+            Debug.Log("Timeline Stopped, Mounting Player.");
+            Mount(playerController); // 타임라인이 종료되면 플레이어를 탑승시킴
+        }
+    }
+
+    public void SetCharacterScale(float scale)
+    {
+        if (playerController != null)
+        {
+            playerController.transform.localScale = new Vector3(scale, scale, scale);
         }
     }
 
@@ -293,18 +353,37 @@ public class CustomMountableController : MonoBehaviour
 
     void CheckForMountable()
     {
+        Debug.Log("Checking for mountable objects...");
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, mountCheckRadius);
         foreach (var hitCollider in hitColliders)
         {
+            Debug.Log("Collider found: " + hitCollider.name);
+            
+            // Check for Player tag
             if (hitCollider.CompareTag("Player"))
             {
                 PlayerController controller = hitCollider.GetComponent<PlayerController>();
                 if (controller != null)
                 {
+                    playerController = controller;
+                    Debug.Log("PlayerController detected and assigned.");
                     Mount(controller);
                     break;
                 }
+                else
+                {
+                    Debug.LogWarning("Player object found but no PlayerController component is attached!");
+                }
             }
+            else
+            {
+                Debug.Log("Collider is not tagged as Player: " + hitCollider.tag);
+            }
+        }
+
+        if (playerController == null)
+        {
+            Debug.LogWarning("No PlayerController found within mountable range or the PlayerController component is missing on the player object.");
         }
     }
 
@@ -333,18 +412,34 @@ public class CustomMountableController : MonoBehaviour
         {
             playerCollider.enabled = false;
         }
+
+        // 타임라인을 활성화하기 전에 게임 오브젝트가 이미 활성화된 상태인지 확인
+        if (mountTimeline != null && !mountTimeline.gameObject.activeInHierarchy)
+        {
+            mountTimeline.gameObject.SetActive(true);
+            mountTimeline.Play();
+        }
+        else
+        {
+            Debug.LogWarning("mountTimeline is already active or null.");
+        }
     }
 
     void Dismount()
     {
         isMounted = false;
 
+        SetCharacterScale(1f); // 스케일을 원래대로 복원
+
         playerController.enabled = true;
 
-        playerController.transform.SetParent(null);
+        // 하차 시 탑승 오브젝트의 로컬 위치와 회전 값을 월드 좌표로 변환하여 복구
+        Vector3 worldPosition = transform.TransformPoint(originalLocalPosition);
+        Quaternion worldRotation = transform.rotation * originalRotation;
 
-        playerController.transform.position = transform.TransformPoint(originalLocalPosition);
-        playerController.transform.rotation = originalRotation;
+        playerController.transform.SetParent(null);
+        playerController.transform.position = worldPosition;
+        playerController.transform.rotation = worldRotation;
 
         Rigidbody playerRb = playerController.GetComponent<Rigidbody>();
         if (playerRb != null)
@@ -357,6 +452,9 @@ public class CustomMountableController : MonoBehaviour
         {
             playerCollider.enabled = true;
         }
+
+        // 캐릭터를 다시 보이게 하기
+        playerController.SetCharacterVisible(true);
 
         playerController = null;
     }
@@ -378,5 +476,13 @@ public class CustomMountableController : MonoBehaviour
     {
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, mountCheckRadius);
+    }
+
+    void OnDestroy()
+    {
+        if (mountTimeline != null)
+        {
+            mountTimeline.stopped -= OnTimelineStopped;
+        }
     }
 }

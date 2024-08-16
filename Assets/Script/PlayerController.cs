@@ -6,46 +6,45 @@ public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float dashMultiplier = 2f;
-    public float rotationSpeed = 1f; // 1이면 1초에 360도 회전
-    public float aimingMoveSpeed = 3f; // 조준 모드에서의 이동 속도
+    public float rotationSpeed = 1f;
+    public float aimingMoveSpeed = 3f;
     public float jumpForce = 7f;
-    public float groundCheckDistance = 0.1f; // 지면 체크 거리
-    public float mountCheckDistance = 2f; // 탑승 가능 거리
-    public LayerMask groundLayer; // 지면 레이어
-    public float health = 100f; // 캐릭터의 체력
+    public float groundCheckDistance = 0.1f;
+    public float mountCheckDistance = 2f;
+    public LayerMask groundLayer;
+    public float health = 100f;
     public Transform cameraTransform;
     public Animator animator;
-    public AnimationEventHandler animationEventHandler; // 추가된 필드
+    public AnimationEventHandler animationEventHandler;
 
     [System.Serializable]
     public class ActionSlot
     {
-        public ActionPreset actionPreset; // 액션 프리셋
-        public float attackDamage; // 공격력
+        public ActionPreset actionPreset;
+        public float attackDamage;
     }
 
-    public ActionSlot[] actionSlots; // 액션 슬롯 배열
+    public ActionSlot[] actionSlots;
 
     private Rigidbody rb;
     private Collider playerCollider;
     private bool isGrounded;
     private bool isDashing;
     private bool isPerformingAction;
-    private bool isAiming; // 조준 모드 여부
-    private bool isActionInProgress; // 액션 진행 여부
-    public Transform mountPoint; // 탑승 시 위치
-    private GameObject currentVehicle; // 현재 탑승한 오브젝트
+    private bool isAiming;
+    private bool isActionInProgress;
+    public Transform mountPoint;
+    private GameObject currentVehicle;
     private bool isMounted = false;
-    private Vector3 originalLocalPosition; // 차량 내 캐릭터의 로컬 위치
-    private Quaternion originalRotation; // 하차 시 돌아갈 원래 회전
-    private bool canMoveVehicle = true; // 차량 이동 가능 여부
+    private Vector3 originalLocalPosition;
+    private Quaternion originalRotation;
+    private bool canMoveVehicle = true;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         playerCollider = GetComponent<Collider>();
 
-        // 상위 오브젝트에서 Animator 및 AnimationEventHandler 찾기
         animator = GetComponentInChildren<Animator>();
         animationEventHandler = GetComponentInChildren<AnimationEventHandler>();
 
@@ -70,10 +69,9 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.F))
             {
-                PerformAction(0); // 첫 번째 액션 슬롯 실행
+                PerformAction(0);
             }
 
-            // 마우스 오른쪽 버튼 입력을 감지하여 조준 모드 전환
             if (Input.GetMouseButtonDown(1))
             {
                 isAiming = true;
@@ -130,11 +128,9 @@ public class PlayerController : MonoBehaviour
 
         Vector3 movement = (forward * moveVertical + right * moveHorizontal).normalized * speed * Time.deltaTime;
 
-        // 캐릭터를 이동시킴
         Vector3 newPosition = rb.position + movement;
         rb.MovePosition(newPosition);
 
-        // 애니메이터 매개변수 설정
         if (isAiming)
         {
             animator.SetFloat("MoveX", moveHorizontal);
@@ -217,15 +213,14 @@ public class PlayerController : MonoBehaviour
 
         if (slot.actionPreset != null)
         {
-            // 대상에게 액션 전달
-            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward); // 카메라 뷰 방향으로 설정
+            Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 ObjectTarget target = hit.collider.GetComponent<ObjectTarget>();
                 if (target != null)
                 {
-                    target.OnReceiveAction(slot.actionPreset); // 액션 프리셋 전달
-                    target.TakeDamage(slot.attackDamage); // 공격력 적용
+                    target.OnReceiveAction(slot.actionPreset);
+                    target.TakeDamage(slot.attackDamage);
                 }
             }
         }
@@ -247,7 +242,6 @@ public class PlayerController : MonoBehaviour
         // 캐릭터 사망 처리 로직
     }
 
-    // 추가된 메서드
     public void OnActionEnd()
     {
         isPerformingAction = false;
@@ -256,8 +250,7 @@ public class PlayerController : MonoBehaviour
 
     void CheckForMountable()
     {
-        // 근처의 모든 콜라이더를 검색하여 탑승 가능한 오브젝트를 찾음
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 5f); // 기본 범위 5f
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 5f);
         foreach (var hitCollider in hitColliders)
         {
             if (hitCollider.CompareTag("Mountable"))
@@ -279,17 +272,17 @@ public class PlayerController : MonoBehaviour
     IEnumerator MountWithDelay(GameObject vehicle)
     {
         currentVehicle = vehicle;
-        originalLocalPosition = vehicle.transform.InverseTransformPoint(transform.position); // 탑승 시 차량 내 로컬 위치 저장
-        originalRotation = transform.rotation; // 탑승 시 원래 회전 저장
+        originalLocalPosition = vehicle.transform.InverseTransformPoint(transform.position);
+        originalRotation = transform.rotation;
 
         transform.SetParent(vehicle.transform);
-        transform.localPosition = Vector3.zero; // 오브젝트 내부의 특정 위치로 설정
-        rb.isKinematic = true; // 물리 연산 비활성화
-        playerCollider.enabled = false; // 캐릭터 콜라이더 비활성화
+        transform.localPosition = Vector3.zero;
+        rb.isKinematic = true;
+        playerCollider.enabled = false;
 
         if (EventSystem.current != null)
         {
-            EventSystem.current.SetSelectedGameObject(vehicle); // 차량 오브젝트를 선택 상태로 만듦
+            EventSystem.current.SetSelectedGameObject(vehicle);
             Debug.Log("Vehicle selected: " + vehicle.name);
         }
         else
@@ -304,17 +297,17 @@ public class PlayerController : MonoBehaviour
             vehicleController.SetMounted(true);
         }
         
-        yield return null; // 기다림 없이 바로 진행
+        yield return null;
     }
 
     void Dismount()
     {
         transform.SetParent(null);
-        transform.position = currentVehicle.transform.TransformPoint(originalLocalPosition); // 하차 시 원래 위치로 복귀
-        transform.rotation = originalRotation; // 하차 시 원래 회전으로 복귀
+        transform.position = currentVehicle.transform.TransformPoint(originalLocalPosition);
+        transform.rotation = originalRotation;
 
-        rb.isKinematic = false; // 물리 연산 활성화
-        playerCollider.enabled = true; // 캐릭터 콜라이더 활성화
+        rb.isKinematic = false;
+        playerCollider.enabled = true;
 
         var vehicleController = currentVehicle.GetComponent<VehicleController>();
         if (vehicleController != null)
@@ -324,18 +317,19 @@ public class PlayerController : MonoBehaviour
         
         currentVehicle = null;
         isMounted = false;
+
+        // 캐릭터를 다시 보이게 설정
+        SetCharacterVisible(true);
     }
 
     void HandleVehicleControls()
     {
-        // 현재 탑승한 오브젝트의 조작 스크립트 호출
         var vehicleControl = currentVehicle.GetComponent<IVehicleControl>();
         if (vehicleControl != null && canMoveVehicle)
         {
             vehicleControl.Control();
         }
 
-        // 마우스 왼쪽 버튼 입력 처리
         if (Input.GetMouseButtonDown(0))
         {
             var vehicleController = currentVehicle.GetComponent<VehicleController>();
@@ -354,7 +348,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // Getter/Setter 메서드 추가
     public GameObject GetCurrentVehicle()
     {
         return currentVehicle;
@@ -373,5 +366,15 @@ public class PlayerController : MonoBehaviour
     public void SetIsMounted(bool mounted)
     {
         isMounted = mounted;
+    }
+
+    // 캐릭터의 Renderer를 활성화 또는 비활성화하는 메서드
+    public void SetCharacterVisible(bool isVisible)
+    {
+        Renderer[] renderers = GetComponentsInChildren<Renderer>();
+        foreach (Renderer renderer in renderers)
+        {
+            renderer.enabled = isVisible;
+        }
     }
 }
