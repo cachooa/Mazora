@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2dc0a7e62e593c4db3bf745e8188111, type: 3}
+  m_Name: ProjectilePreset_03
+  m_EditorClassIdentifier: 
+  prefabSlot: {fileID: 6076019673620953490, guid: 265aae39d65ad0e4b8146b9cbfbb79fd, type: 3}
+  fireRate: 2
+  actionForce: 20
+  destroyAfterSeconds: 3
